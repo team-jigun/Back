@@ -21,3 +21,5 @@ const authUtil = {
     next();
   }
 }
+
+module.exports = authUtil;
