@@ -4,7 +4,8 @@ const util  = require('../modules/util');
 
 const authUtil = {
   checkToken: async (req, res, next) => {
-    const token = req.headers.token;
+    let token = req.headers.authorization.replace('Bearer ', '');
+    const { refreshToken, id } = req.body;
 
     if (!token) {
       return res.json(util.fail(TOKEN_EMPTY.code, TOKEN_EMPTY.message));

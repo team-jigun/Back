@@ -8,8 +8,10 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use(cors());
 
-const userRouter = require('./routes/user');
+const commonRouter = require('./routes/common');
+app.use('/', commonRouter);
 
+const userRouter = require('./routes/user');
 app.use('/user', userRouter);
 
 module.exports = app;
