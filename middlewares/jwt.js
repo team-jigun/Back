@@ -1,16 +1,13 @@
+const User = require('../Schema/User');
 const jwt = require('jsonwebtoken');
-const { secretKey, options } = require('./config/jwtOption');
+const { secretKey, options, refreshTokenOptions } = require('./config/jwtOption');
 const ERROR = require('../modules/ERROR');
 
 module.exports = {
   sign: async user => {
     const payload = { id: user.id };
 
-    const result = {
-      token: jwt.sign(payload, secretKey, options)
-    };
-
-    return result;
+    return jwt.sign(payload, secretKey, options);
   },
   verify: async token => {
     let decoded;
@@ -31,10 +28,28 @@ module.exports = {
         errorMessage = TOKEN_INVALID.message;
       }
 
-      console.log(errorMessage);
+      console.log(`jwt module Error: ${errorMessage}`);
       return errorCode;
     }
 
     return decoded;
+  },
+  refresh: _ => {
+    return jwt.sign({}, secretKey, refreshTokenOptions);
+  },
+  refreshVerify: async (refreshToken, id) => {
+    try {
+      const user = await User.findOne({ id });
+
+      if (refreshToken === user.refreshToken) {
+        jwt.verify(refreshToken, secretKey);
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
   }
 }

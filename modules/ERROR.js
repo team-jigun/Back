@@ -7,6 +7,10 @@ module.exports = {
     code: 'Expired Token',
     message: 'Token re-issuance required'
   },
+  TOKEN_NOT_EXPIRED: {
+    code: 'Not Expired Token',
+    message: 'Not Expired Token'
+  },
   TOKEN_INVALID: {
     code: 'Invalid Token',
     message: 'Invalid Token'
@@ -14,6 +18,10 @@ module.exports = {
   TOKEN_EMPTY: {
     code: 'Empty Token',
     message: 'Token is Empty'
+  },
+  TOKEN_OR_REFRESH_EMPTY: {
+    code: 'Empty Token or Refresh Token',
+    message: 'Token or Refresh Token is Empty'
   },
   WRONG_PASSWORD: {
     IN_KOREAN: {
@@ -38,5 +46,9 @@ module.exports = {
   EXISTS_ID: {
     code: 'Exists User ID',
     message: 'The user id already exists.'
+  },
+  USER_INVALID: {
+    code: 'Invalid User',
+    message: 'Please login again'
   }
 }
