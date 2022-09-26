@@ -99,6 +99,6 @@ router.post('/signIn', async (req, res) => {
   }
 });
 
-router.post('/test', authUtil, userHandler.test);
+router.post('/changeUsername', authUtil, userHandler.changeUsername);
 
 module.exports = router;
