@@ -14,4 +14,7 @@ app.use('/', commonRouter);
 const userRouter = require('./routes/user');
 app.use('/user', userRouter);
 
+const chatRouter = require('./routes/chat');
+app.use('/chat', chatRouter);
+
 module.exports = app;
