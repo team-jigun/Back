@@ -29,14 +29,11 @@ module.exports = {
         case USER_INVALID.code:
           return res.json(util.fail(USER_INVALID.code, USER_INVALID.message));
         default:
-          console.log(error);
-
           if (error.name === 'TypeError') {
             return res.json(util.fail(USER_INVALID.code, USER_INVALID.message));
           }
 
           console.log(error);
-          
           return res.json(util.fail(OTHER.code, OTHER.message));
       }
     }
