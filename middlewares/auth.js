@@ -21,6 +21,22 @@ const authUtil = {
 
     req.id = user.id;
     next();
+  },
+  checkTokenSocket: async (req) => {
+    const token = req.headers.authorization.replace('Bearer ', '');
+    const refreshToken = req.headers.refresh;
+
+    if (!token || !refreshToken) {
+      throw TOKEN_OR_REFRESH_EMPTY.code
+    } 
+
+    const user = await jwt.verify(token);
+    const isNotExpiredRefresh = await jwt.refreshVerify(refreshToken, user.id);
+    if (user === TOKEN_EXPIRED.code) {
+      throw TOKEN_EXPIRED;
+    } else if (user === TOKEN_INVALID.code || !isNotExpiredRefresh || user.id === undefined) {
+      throw TOKEN_INVALID;
+    }
   }
 }
 
