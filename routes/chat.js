@@ -24,11 +24,11 @@ io.use(async (socket, next) => {
     // else console.log(error);
 
     console.log(`Socket Id: ${socket.id}\nCODE: ${errorObject.code}\nMESSAGE: ${errorObject.message}`);
-    socket.disconnect();
+    next(errorObject);
   }
 });
 
-io.on('connection', async socket => {
+io.on('connection', socket => {
   socket.on('message', message => {
     console.log(message);
   });
