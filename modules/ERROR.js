@@ -47,8 +47,26 @@ module.exports = {
     code: 'Exists User ID',
     message: 'The user id already exists.'
   },
+  NOT_EXISTS_ID: {
+    code: 'Not Exists User ID',
+    message: 'The user id not exists.'
+  },
   USER_INVALID: {
     code: 'Invalid User',
     message: 'Please login again'
+  },
+  SOCKET_ERROR: {
+    NOT_EXISTS_ROOM: {
+      code: 'Not Exists Room Name',
+      message: 'The room not exists.'
+    },
+    EMPTY_ROOM_NAME: {
+      code: 'Empty Room Name',
+      message: 'Room Name is required.'
+    }
+  },
+  PERMISSION_INSUFFICIENT: {
+    code: 'Insufficient Permission',
+    message: 'Please correct user permissions and try again.'
   }
 }

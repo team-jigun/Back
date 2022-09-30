@@ -27,11 +27,9 @@ router.post('/signUp', async (req, res) => {
     const isExistsUserId = await User.findOne({ id });
     if(isExistsUserId) throw EXISTS_ID;
 
-    const user = new User({
+    await User.insertOne({
       id, password: encodedPassword, name
     });
-
-    await user.save();
 
     return res.json(util.success('Success SignUp', 'Success sign up!'));
   } catch(error) {
