@@ -64,10 +64,20 @@ router.post('/createRoom', checkToken, chatHandler.createNewRoom, async _ => {
   io.emit('newRoom', await chatHandler.getChatRoomList());
 });
 
-router.post('/changeUsername', checkToken, chatHandler.changeUsernameByRoom);
+router.post('/changeUsername', checkToken, chatHandler.changeUsernameByRoom, req => {
+
+});
+
+router.post('/changeCurrentUsername', checkToken, chatHandler.changeCurrentNameByRoom, req => {
+  const { id: userId, body: { roomName } } = req;
+
+  io.to(roomName).emit('changeUsername', userId);
+});
 
 router.post('/removeRoom', checkToken, chatHandler.removeRoom, req => {
   io.emit('removeRoom', req.roomName);
 });
+
+router.post('/addUserToRoom', checkToken, chatHandler.addUserToRoom);
 
 module.exports = router;

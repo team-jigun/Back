@@ -56,9 +56,17 @@ module.exports = {
     message: 'Please login again'
   },
   SOCKET_ERROR: {
+    EXISTS_ROOM: {
+      code: 'Exists Room Name',
+      message: 'The room name already exists.'
+    },
     NOT_EXISTS_ROOM: {
       code: 'Not Exists Room Name',
       message: 'The room not exists.'
+    },
+    NOT_EXISTS_USER_BY_ROOM: {
+      code: 'Not Exists User By This Room',
+      message: 'The user not exists by this room: [#ROOM_NAME#].\nAfter add user this room retry this.'
     },
     EMPTY_ROOM_NAME: {
       code: 'Empty Room Name',
