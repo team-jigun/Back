@@ -8,7 +8,8 @@ const USER_PERMISSION = {
   READ: 1,
   WRITE: 2,
   ADD: 3,
-  KICK: 4
+  KICK: 4,
+  ADMIN: 5
 };
 
 module.exports = {
@@ -33,7 +34,7 @@ module.exports = {
 
       if (!user) throw NOT_EXISTS_ID;
 
-      const newRoom = new ChatRooms({roomName, users: [{ id: user.id, name: user.name, permission: 4 }]});
+      const newRoom = new ChatRooms({roomName, users: [{ id: user.id, name: user.name, permission: USER_PERMISSION.ADMIN }]});
       await newRoom.save();
 
       next();
@@ -76,7 +77,7 @@ module.exports = {
       if (room['users'][user.id].permission < USER_PERMISSION.KICK) throw PERMISSION_INSUFFICIENT;
 
       if (username !== username) {
-        await ChatRooms.updateOne({ "roomName": roomName, "users.id": userId }, { $set: { "users.$.name": username } });
+        await ChatRooms.updateOne({ roomName, "users.id": userId }, { $set: { "users.$.name": username } });
       }
 
       return res.json(util.success(`Success Change username`, `Success Change username by ${room.roomName}`));
@@ -92,6 +93,41 @@ module.exports = {
           return res.json(util.fail(USERNAME.code, USERNAME.message));
         case NOT_EXISTS_ID.code:
           return res.json(util.fail(NOT_EXISTS_ID.code, NOT_EXISTS_ID.message));
+        case NOT_EXISTS_ROOM.code:
+          return res.json(util.fail(NOT_EXISTS_ROOM.code, NOT_EXISTS_ROOM.message));
+        case PERMISSION_INSUFFICIENT.code:
+          return res.json(util.fail(PERMISSION_INSUFFICIENT.code, PERMISSION_INSUFFICIENT.message));
+        default:
+          console.log(error);
+          return res.json(util.fail(OTHER.code, OTHER.message));
+      }
+    }
+  },
+  removeRoom: async (req, res, next) => {
+    const { roomName } = req.body;
+
+    try {
+      const { id: userId } = req;
+
+      const room = await ChatRooms.findOne({ roomName });
+      if (!room) throw NOT_EXISTS_ROOM;
+
+      const userList = room.users;
+      userList.map(userByRoom => {
+        if (userByRoom.id === userId) {
+          if (userByRoom.permission < USER_PERMISSION.ADMIN) throw PERMISSION_INSUFFICIENT;
+        }
+      });
+
+      await ChatRooms.deleteOne({ roomName });
+      req.roomName = roomName;
+
+      next();
+      return res.json(util.success(`Success Remove Chatting Room`, `Success Remove Chatting Room: ${roomName}`));
+    } catch (error) {
+      const { code } = error;
+
+      switch(code) {
         case NOT_EXISTS_ROOM.code:
           return res.json(util.fail(NOT_EXISTS_ROOM.code, NOT_EXISTS_ROOM.message));
         case PERMISSION_INSUFFICIENT.code:

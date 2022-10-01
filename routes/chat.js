@@ -44,8 +44,10 @@ io.on('connection', async socket => {
   let roomList = await chatHandler.getChatRoomList();
   console.log(`connection: ${roomList}`);
 
-  socket.on('connectionRoom', () => {
+  socket.on('connectionRoom', roomName => {
+    const selectedRoom = roomList.filter(room => room === roomName)[0];
 
+    if (selectedRoom) socket.join(selectedRoom);
   });
 
   socket.on('newRoom', async _ => {
@@ -63,5 +65,9 @@ router.post('/createRoom', checkToken, chatHandler.createNewRoom, async _ => {
 });
 
 router.post('/changeUsername', checkToken, chatHandler.changeUsernameByRoom);
+
+router.post('/removeRoom', checkToken, chatHandler.removeRoom, req => {
+  io.emit('removeRoom', req.roomName);
+});
 
 module.exports = router;

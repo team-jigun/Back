@@ -2,7 +2,7 @@ const User = require('../Schema/User');
 const router = require('express').Router();
 
 const authUtil = require('../middlewares/auth').checkToken;
-const { sign, refresh } = require('../middlewares/jwt');
+const { sign, refresh, isExpired } = require('../middlewares/jwt');
 
 const encodePassword = require('../modules/crypto');
 const util = require('../modules/util');
@@ -66,8 +66,12 @@ router.post('/signIn', async (req, res) => {
     const user = await User.findOne({ id, password: encodedPassword });
 
     const token = await sign(user);
-    const refreshToken = await refresh();
-    await User.updateOne({ id: user.id }, {$set: {refreshToken}});
+
+    let { refreshToken } = user;
+    if (isExpired(refreshToken)) {
+      refreshToken = await refresh();
+      await User.updateOne({ id: user.id }, {$set: {refreshToken}});
+    }
 
     const options = {
       token, refreshToken

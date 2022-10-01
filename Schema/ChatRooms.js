@@ -19,7 +19,7 @@ const chatRoomSchema = new mongoose.Schema({
         },
         permission: {
             type: Number, 
-            enum: [1, 2, 3, 4]
+            enum: [1, 2, 3, 4, 5]
         }
     }]
 });
