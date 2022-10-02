@@ -41,14 +41,48 @@ module.exports = {
     USERNAME: {
       code: 'Empty Username',
       message: 'Username is required.'
+    },
+    ROOM_NAME: {
+      code: 'Empty Room Name',
+      message: 'Room Name is required.'
+    },
+    PERMISSION: {
+      code: 'Empty Permission',
+      message: 'Permission is required.'
     }
   },
   EXISTS_ID: {
     code: 'Exists User ID',
     message: 'The user id already exists.'
   },
+  NOT_EXISTS_ID: {
+    code: 'Not Exists User ID',
+    message: 'The user id not exists.'
+  },
   USER_INVALID: {
     code: 'Invalid User',
     message: 'Please login again'
+  },
+  SOCKET_ERROR: {
+    EXISTS_ROOM: {
+      code: 'Exists Room Name',
+      message: 'The room name already exists.'
+    },
+    NOT_EXISTS_ROOM: {
+      code: 'Not Exists Room Name',
+      message: 'The room not exists.'
+    },
+    NOT_EXISTS_USER_BY_ROOM: {
+      code: 'Not Exists User By This Room',
+      message: 'The user not exists by this room: [#ROOM_NAME#].\nAfter add user this room retry this.'
+    }
+  },
+  PERMISSION_INSUFFICIENT: {
+    code: 'Insufficient Permission',
+    message: 'Please current user permissions and try again.'
+  },
+  UNDECLARED_PERMISSION: {
+    code: 'Undeclared Permission.',
+    message: 'Undeclared permission.\nMust be permission one of READ, WRITE, ADD, KICK, ADMIN.'
   }
 }

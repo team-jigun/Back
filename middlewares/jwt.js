@@ -51,5 +51,16 @@ module.exports = {
       console.log(error);
       return false;
     }
+  },
+  isExpired: token => {
+    if (!token) return true;
+    
+    try {
+      jwt.verify(token, secretKey);
+    } catch (error) {
+      if (error.message === 'jwt expired') return true;
+    }
+
+    return false;
   }
 }

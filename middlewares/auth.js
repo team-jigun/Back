@@ -4,12 +4,10 @@ const util  = require('../modules/util');
 
 const authUtil = {
   checkToken: async (req, res, next) => {
+    if (!req.headers.authorization || !req.headers.refresh) return res.json(util.fail(TOKEN_OR_REFRESH_EMPTY.code, TOKEN_OR_REFRESH_EMPTY.message));
+
     const token = req.headers.authorization.replace('Bearer ', '');
     const refreshToken = req.headers.refresh;
-
-    if (!token || !refreshToken) {
-      return res.json(util.fail(TOKEN_OR_REFRESH_EMPTY.code, TOKEN_OR_REFRESH_EMPTY.message));
-    } 
 
     const user = await jwt.verify(token);
     const isNotExpiredRefresh = await jwt.refreshVerify(refreshToken, user.id);
@@ -23,12 +21,10 @@ const authUtil = {
     next();
   },
   checkTokenSocket: async (req) => {
+    if (!req.headers.authorization || !req.headers.refresh) throw TOKEN_OR_REFRESH_EMPTY;
+
     const token = req.headers.authorization.replace('Bearer ', '');
     const refreshToken = req.headers.refresh;
-
-    if (!token || !refreshToken) {
-      throw TOKEN_OR_REFRESH_EMPTY.code
-    } 
 
     const user = await jwt.verify(token);
     const isNotExpiredRefresh = await jwt.refreshVerify(refreshToken, user.id);

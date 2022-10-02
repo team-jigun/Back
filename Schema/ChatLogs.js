@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const chatLogSchema = new mongoose.Schema({
-    sessionId: {
+    roomName: {
         type: String,
         required: true,
         index: true,
@@ -16,6 +16,9 @@ const chatLogSchema = new mongoose.Schema({
     },
     message: {
         type: String
+    },
+    sendTime: {
+        type : Date, default: Date.now
     }
 });
 
