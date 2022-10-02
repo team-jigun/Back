@@ -80,4 +80,6 @@ router.post('/removeRoom', checkToken, chatHandler.removeRoom, req => {
 
 router.post('/addUserToRoom', checkToken, chatHandler.addUserToRoom);
 
+router.post('/kickUser', checkToken, chatHandler.kickUserByRoom);
+
 module.exports = router;

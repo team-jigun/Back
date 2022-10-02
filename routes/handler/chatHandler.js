@@ -219,7 +219,7 @@ module.exports = {
       if (!user) throw NOT_EXISTS_ID;
 
       const room = await ChatRooms.findOne({ roomName });
-      if (!room) throw NOT_EXISTS_ROOM
+      if (!room) throw NOT_EXISTS_ROOM;
 
       validationUserByRoom(room.users, currentUserId, roomName, USER_PERMISSION.ADD);
 
@@ -229,6 +229,54 @@ module.exports = {
 
       next();
       return res.json(util.success(`Success Insert User By Room`, `Success Insert ${addUser.id} By Room: ${roomName}`));
+    } catch (error) {
+      const { code } = error;
+
+      switch(code) {
+        case EMPTY_ROOM_NAME.code:
+          return res.json(util.fail(EMPTY_ROOM_NAME.code, EMPTY_ROOM_NAME.message));
+        case USER_ID.code:
+          return res.json(util.fail(USER_ID.code, USER_ID.message));
+        case NOT_EXISTS_ID.code:
+          return res.json(util.fail(NOT_EXISTS_ID.code, NOT_EXISTS_ID.message));
+        case NOT_EXISTS_ROOM.code:
+          return res.json(util.fail(NOT_EXISTS_ROOM.code, NOT_EXISTS_ROOM.message));
+        case NOT_EXISTS_USER_BY_ROOM.code:
+          return res.json(util.fail(NOT_EXISTS_USER_BY_ROOM.code, error.message));
+        case PERMISSION_INSUFFICIENT.code:
+          return res.json(util.fail(PERMISSION_INSUFFICIENT.code, PERMISSION_INSUFFICIENT.message));
+        default:
+          console.log(error);
+          return res.json(util.fail(OTHER.code, OTHER.message));
+      }
+    }
+  },
+  kickUserByRoom: async (req, res, next) => {
+    const { roomName, userId } = req.body;
+
+    try {
+      if (!roomName) {
+        throw EMPTY_ROOM_NAME;
+      } else if (!userId) {
+        throw USER_ID;
+      }
+
+      const { id: currentUserId } = req;
+
+      const user = await User.findOne({ id: userId });
+      if (!user) throw NOT_EXISTS_ID;
+
+      const room = await ChatRooms.findOne({ roomName });
+      if (!room) throw NOT_EXISTS_ROOM;
+
+      validationUserByRoom(room.users, currentUserId, roomName, USER_PERMISSION.KICK);
+
+      room.users = room.users.filter(userByRoom => userByRoom.id !== userId);
+
+      await room.save();
+
+      next();
+      return res.json(util.success(`Success Kick User By Room`, `Success Kick ${userId.id} By Room: ${roomName}`));
     } catch (error) {
       const { code } = error;
 
