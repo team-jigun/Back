@@ -41,6 +41,14 @@ module.exports = {
     USERNAME: {
       code: 'Empty Username',
       message: 'Username is required.'
+    },
+    ROOM_NAME: {
+      code: 'Empty Room Name',
+      message: 'Room Name is required.'
+    },
+    PERMISSION: {
+      code: 'Empty Permission',
+      message: 'Permission is required.'
     }
   },
   EXISTS_ID: {
@@ -67,14 +75,14 @@ module.exports = {
     NOT_EXISTS_USER_BY_ROOM: {
       code: 'Not Exists User By This Room',
       message: 'The user not exists by this room: [#ROOM_NAME#].\nAfter add user this room retry this.'
-    },
-    EMPTY_ROOM_NAME: {
-      code: 'Empty Room Name',
-      message: 'Room Name is required.'
     }
   },
   PERMISSION_INSUFFICIENT: {
     code: 'Insufficient Permission',
-    message: 'Please correct user permissions and try again.'
+    message: 'Please current user permissions and try again.'
+  },
+  UNDECLARED_PERMISSION: {
+    code: 'Undeclared Permission.',
+    message: 'Undeclared permission.\nMust be permission one of READ, WRITE, ADD, KICK, ADMIN.'
   }
 }

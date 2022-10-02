@@ -1,7 +1,7 @@
 const ChatRooms = require('../../Schema/ChatRooms');
 const User = require('../../Schema/User');
 
-const { OTHER, SOCKET_ERROR: { EXISTS_ROOM, NOT_EXISTS_ROOM, NOT_EXISTS_USER_BY_ROOM, EMPTY_ROOM_NAME }, NOT_EXISTS_ID, EMPTY_INFO: { USERNAME, USER_ID }, PERMISSION_INSUFFICIENT } = require('../../modules/ERROR');
+const { OTHER, SOCKET_ERROR: { EXISTS_ROOM, NOT_EXISTS_ROOM, NOT_EXISTS_USER_BY_ROOM }, NOT_EXISTS_ID, EMPTY_INFO: { USERNAME, USER_ID, ROOM_NAME, PERMISSION }, PERMISSION_INSUFFICIENT, UNDECLARED_PERMISSION } = require('../../modules/ERROR');
 const util = require('../../modules/util');
 
 const USER_PERMISSION = {
@@ -11,11 +11,11 @@ const USER_PERMISSION = {
   KICK: 4,
   ADMIN: 5,
 
-  1: "READ",
-  2: "WRITE",
-  3: "ADD",
-  4: "KICK",
-  5: "ADMIN"
+  1: 1,
+  2: 2,
+  3: 3,
+  4: 4,
+  5: 5
 };
 
 class RoomUser {
@@ -63,7 +63,7 @@ module.exports = {
 
     try {
       if (!roomName) {
-        throw EMPTY_ROOM_NAME;
+        throw ROOM_NAME;
       }
 
       const user = await User.findOne({ id: req.id });
@@ -80,8 +80,8 @@ module.exports = {
       const { code } = error;
       
       switch(code) {
-        case EMPTY_ROOM_NAME.code:
-          return res.json(util.fail(EMPTY_ROOM_NAME.code, EMPTY_ROOM_NAME.message));
+        case ROOM_NAME.code:
+          return res.json(util.fail(ROOM_NAME.code, ROOM_NAME.message));
         case EXISTS_ROOM.code:
           return res.json(util.fail(EXISTS_ROOM.code, EXISTS_ROOM.message));
         case NOT_EXISTS_ID.code:
@@ -100,7 +100,7 @@ module.exports = {
 
     try {
       if (!roomName) {
-        throw EMPTY_ROOM_NAME;
+        throw ROOM_NAME;
       } else if (!userId) {
         throw USER_ID;
       } else if (!username) {
@@ -124,8 +124,8 @@ module.exports = {
       const { code } = error;
       
       switch(code) {
-        case EMPTY_ROOM_NAME.code:
-          return res.json(util.fail(EMPTY_ROOM_NAME.code, EMPTY_ROOM_NAME.message));
+        case ROOM_NAME.code:
+          return res.json(util.fail(ROOM_NAME.code, ROOM_NAME.message));
         case USER_ID.code:
           return res.json(util.fail(USER_ID.code, USER_ID.message));
         case USERNAME.code:
@@ -208,7 +208,7 @@ module.exports = {
     
     try {
       if (!roomName) {
-        throw EMPTY_ROOM_NAME;
+        throw ROOM_NAME;
       } else if (!userId) {
         throw USER_ID;
       }
@@ -225,7 +225,8 @@ module.exports = {
 
       const addUser = new RoomUser(user.id, user.name, permission ?? USER_PERMISSION.WRITE);
 
-      await ChatRooms.updateOne({ roomName }, { $push: { users: addUser } });
+      room.users.push(addUser);
+      await room.save();
 
       next();
       return res.json(util.success(`Success Insert User By Room`, `Success Insert ${addUser.id} By Room: ${roomName}`));
@@ -233,8 +234,8 @@ module.exports = {
       const { code } = error;
 
       switch(code) {
-        case EMPTY_ROOM_NAME.code:
-          return res.json(util.fail(EMPTY_ROOM_NAME.code, EMPTY_ROOM_NAME.message));
+        case ROOM_NAME.code:
+          return res.json(util.fail(ROOM_NAME.code, ROOM_NAME.message));
         case USER_ID.code:
           return res.json(util.fail(USER_ID.code, USER_ID.message));
         case NOT_EXISTS_ID.code:
@@ -256,7 +257,7 @@ module.exports = {
 
     try {
       if (!roomName) {
-        throw EMPTY_ROOM_NAME;
+        throw ROOM_NAME;
       } else if (!userId) {
         throw USER_ID;
       }
@@ -276,13 +277,13 @@ module.exports = {
       await room.save();
 
       next();
-      return res.json(util.success(`Success Kick User By Room`, `Success Kick ${userId.id} By Room: ${roomName}`));
+      return res.json(util.success('Success Kick User By Room', `Success Kick ${userId.id} By Room: ${roomName}`));
     } catch (error) {
       const { code } = error;
 
       switch(code) {
-        case EMPTY_ROOM_NAME.code:
-          return res.json(util.fail(EMPTY_ROOM_NAME.code, EMPTY_ROOM_NAME.message));
+        case ROOM_NAME.code:
+          return res.json(util.fail(ROOM_NAME.code, ROOM_NAME.message));
         case USER_ID.code:
           return res.json(util.fail(USER_ID.code, USER_ID.message));
         case NOT_EXISTS_ID.code:
@@ -293,6 +294,73 @@ module.exports = {
           return res.json(util.fail(NOT_EXISTS_USER_BY_ROOM.code, error.message));
         case PERMISSION_INSUFFICIENT.code:
           return res.json(util.fail(PERMISSION_INSUFFICIENT.code, PERMISSION_INSUFFICIENT.message));
+        default:
+          console.log(error);
+          return res.json(util.fail(OTHER.code, OTHER.message));
+      }
+    }
+  },
+  updatePermission: async (req, res, next) => {
+    const { roomName, userId, permission: paramPermission } = req.body;
+
+    try {
+      let permission;
+
+      if (!roomName) {
+        throw ROOM_NAME;
+      } else if (!userId) {
+        throw USER_ID;
+      } else if (!paramPermission) {
+        throw PERMISSION;
+      } else if (!(permission = USER_PERMISSION[paramPermission])) {
+        throw UNDECLARED_PERMISSION
+      }
+
+      const { id: currentUserId } = req;
+
+      const user = await User.findOne({ id: userId });
+      if (!user) throw NOT_EXISTS_ID;
+
+      const room = await ChatRooms.findOne({ roomName });
+      if (!room) throw NOT_EXISTS_ROOM;
+
+      const userList = room.users;
+      validationUserByRoom(userList, currentUserId, roomName, USER_PERMISSION.ADMIN);
+
+      const selectedUser = userList.filter(userByRoom => userByRoom.id === userId)[0];
+      if (!selectedUser) {
+        const code = NOT_EXISTS_USER_BY_ROOM.code
+            , message = NOT_EXISTS_USER_BY_ROOM.message.replace('[#ROOM_NAME#]', roomName);
+
+        throw { code, message };
+      }
+
+      if (selectedUser.permission !== permission) {
+        await ChatRooms.updateOne({ roomName, "users.id": userId }, { $set: { "users.$.permission": permission } });
+      }
+
+      next();
+      return res.json(util.success('Success Update User Permission By Room', `Success Update ${userId} By Room: ${roomName}`));
+    } catch (error) {
+      const { code } = error;
+
+      switch(code) {
+        case ROOM_NAME.code:
+          return res.json(util.fail(ROOM_NAME.code, ROOM_NAME.message));
+        case USER_ID.code:
+          return res.json(util.fail(USER_ID.code, USER_ID.message));
+        case PERMISSION.code:
+          return res.json(util.fail(PERMISSION.code, PERMISSION.message));
+        case NOT_EXISTS_ID.code:
+          return res.json(util.fail(NOT_EXISTS_ID.code, NOT_EXISTS_ID.message));
+        case NOT_EXISTS_ROOM.code:
+          return res.json(util.fail(NOT_EXISTS_ROOM.code, NOT_EXISTS_ROOM.message));
+        case NOT_EXISTS_USER_BY_ROOM.code:
+          return res.json(util.fail(NOT_EXISTS_USER_BY_ROOM.code, error.message));
+        case PERMISSION_INSUFFICIENT.code:
+          return res.json(util.fail(PERMISSION_INSUFFICIENT.code, PERMISSION_INSUFFICIENT.message));
+        case UNDECLARED_PERMISSION.code:
+            return res.json(util.fail(UNDECLARED_PERMISSION.code, UNDECLARED_PERMISSION.message));
         default:
           console.log(error);
           return res.json(util.fail(OTHER.code, OTHER.message));

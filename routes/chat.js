@@ -74,12 +74,26 @@ router.post('/changeCurrentUsername', checkToken, chatHandler.changeCurrentNameB
   io.to(roomName).emit('changeUsername', userId);
 });
 
-router.post('/removeRoom', checkToken, chatHandler.removeRoom, req => {
+router.post('/rmeoveRoom', checkToken, chatHandler.removeRoom, req => {
   io.emit('removeRoom', req.roomName);
 });
 
-router.post('/addUserToRoom', checkToken, chatHandler.addUserToRoom);
+router.post('/addUserToRoom', checkToken, chatHandler.addUserToRoom, req => {
+  const { roomName, userId } = req.body;
 
-router.post('/kickUser', checkToken, chatHandler.kickUserByRoom);
+  io.to(roomName).emit('addUser', userId);
+});
+
+router.post('/kickUser', checkToken, chatHandler.kickUserByRoom, req => {
+  const { roomName, userId } = req.body;
+
+  io.to(roomName).emit('kickUser', userId);
+});
+
+router.post('/updatePermission', checkToken, chatHandler.updatePermission, req => {
+  const { id: userId, body: { roomName } } = req;
+
+  io.to(roomName).emit('updatePermission', userId);
+});
 
 module.exports = router;

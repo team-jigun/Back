@@ -53,7 +53,7 @@ module.exports = {
     }
   },
   isExpired: token => {
-    if (!token) throw new Error('token null');
+    if (!token) return true;
     
     try {
       jwt.verify(token, secretKey);
