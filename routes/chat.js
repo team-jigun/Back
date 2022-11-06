@@ -10,6 +10,7 @@ const { Server } = require('socket.io');
 const io = new Server(socketPort);
 
 const chatHandler = require('./handler/chatHandler');
+const { insertMessage } = require('./handler/chatHandler');
 
 io.use(async (socket, next) => {
   try {
@@ -45,23 +46,27 @@ io.on('connection', async socket => {
   console.log(`connection: ${roomList}`);
 
   socket.on('connectionRoom', roomName => {
-    const selectedRoom = roomList.filter(room => room === roomName)[0];
+    const selectedRoom = roomList.filter(room => room.roomName === roomName)[0];
 
-    if (selectedRoom) socket.join(selectedRoom);
+    if (selectedRoom) socket.join(selectedRoom.roomName);
   });
 
   socket.on('newRoom', async _ => {
     roomList = await chatHandler.getChatRoomList();
   });
 
-  socket.on('message', (roomName, userName, message) => {
-    console.log(`roomName: ${roomName}, userName: ${userName}, message: ${message}`);
-    if (!roomList.includes(roomName)) throw NOT_EXISTS_ROOM;
+  socket.on('message', async (roomName, userId, message) => {
+    console.log(`userId: ${userId}, message: ${message}`);
+    if (roomList.filter(room => room.roomName === roomName).length === 0) throw NOT_EXISTS_ROOM;
+
+    console.log('test');
+    await insertMessage(roomName, userId, message);
+    socket.to(roomName).emit('sendingMessage', userId, message);
   });
 });
 
 router.post('/createRoom', checkToken, chatHandler.createNewRoom, async _ => {
-  io.emit('newRoom', await chatHandler.getChatRoomList());
+  io.emit('newRoom');
 });
 
 router.post('/changeUsername', checkToken, chatHandler.changeUsernameByRoom, req => {

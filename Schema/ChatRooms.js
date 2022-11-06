@@ -11,8 +11,7 @@ const chatRoomSchema = new mongoose.Schema({
         id: {
             type: String, 
             required: true,
-            index: true, 
-            unique: true
+            index: true
         },
         name: {
             type: String

@@ -3,6 +3,7 @@ const User = require('../../Schema/User');
 
 const { OTHER, SOCKET_ERROR: { EXISTS_ROOM, NOT_EXISTS_ROOM, NOT_EXISTS_USER_BY_ROOM }, NOT_EXISTS_ID, EMPTY_INFO: { USERNAME, USER_ID, ROOM_NAME, PERMISSION }, PERMISSION_INSUFFICIENT, UNDECLARED_PERMISSION } = require('../../modules/ERROR');
 const util = require('../../modules/util');
+const ChatLogs = require('../../Schema/ChatLogs');
 
 const USER_PERMISSION = {
   READ: 1,
@@ -92,8 +93,35 @@ module.exports = {
       }
     }
   },
-  insertMessage: async (roomName, userId, userName, message) => {
+  insertMessage: async (roomName, userId, message) => {
+    try {
+      const sendingRoom = await ChatRooms.findOne({ roomName });
+      if (!sendingRoom) throw NOT_EXISTS_ROOM;
 
+      validationUserByRoom(sendingRoom.users, userId, roomName, USER_PERMISSION.WRITE);
+
+      const sendingUsername = sendingRoom.users.filter(user => user.id === userId)[0].name;
+      const newLog = new ChatLogs({ roomName, userId, username: sendingUsername, message });
+      await newLog.save();
+      console.log(newLog);
+    } catch (error) {
+      const { code } = error;
+      
+      switch(code) {
+        case NOT_EXISTS_ROOM.code:
+          console.log(NOT_EXISTS_ROOM.message)
+          // return res.json(util.fail(NOT_EXISTS_ROOM.code, NOT_EXISTS_ROOM.message));
+        case NOT_EXISTS_USER_BY_ROOM.code:
+          console.log(NOT_EXISTS_USER_BY_ROOM.message)
+          // return res.json(util.fail(NOT_EXISTS_USER_BY_ROOM.code, error.message));
+        case PERMISSION_INSUFFICIENT.code:
+          console.log(PERMISSION_INSUFFICIENT.message)
+          // return res.json(util.fail(PERMISSION_INSUFFICIENT.code, PERMISSION_INSUFFICIENT.message));
+        default:
+          console.log(error);
+          // return res.json(util.fail(OTHER.code, OTHER.message));
+      }
+    }
   },
   changeUsernameByRoom: async (req, res) => {
     const { roomName, userId, username } = req.body;
@@ -155,6 +183,7 @@ module.exports = {
 
       validationUserByRoom(room.users, userId, roomName, USER_PERMISSION.WRITE);
 
+      const currentUser = room.users.filter(user => user.id === userId);
       if (currentUser.name !== username) {
         await ChatRooms.updateOne({ roomName, "users.id": userId }, { $set: { "users.$.name": username } });
       }
