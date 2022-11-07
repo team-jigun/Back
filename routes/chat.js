@@ -59,43 +59,44 @@ io.on('connection', async socket => {
     console.log(`userId: ${userId}, message: ${message}`);
     if (roomList.filter(room => room.roomName === roomName).length === 0) throw NOT_EXISTS_ROOM;
 
-    console.log('test');
     await insertMessage(roomName, userId, message);
     socket.to(roomName).emit('sendingMessage', userId, message);
   });
 });
 
-router.post('/createRoom', checkToken, chatHandler.createNewRoom, async _ => {
+router.post('/admin/createRoom', checkToken, chatHandler.createNewRoom, async _ => {
   io.emit('newRoom');
 });
 
-router.post('/changeUsername', checkToken, chatHandler.changeUsernameByRoom, req => {
-
-});
-
-router.post('/changeCurrentUsername', checkToken, chatHandler.changeCurrentNameByRoom, req => {
+router.post('/admin/changeUsername', checkToken, chatHandler.changeUsernameByRoom, req => {
   const { id: userId, body: { roomName } } = req;
 
   io.to(roomName).emit('changeUsername', userId);
 });
 
-router.post('/rmeoveRoom', checkToken, chatHandler.removeRoom, req => {
+router.post('/me/changeUsername', checkToken, chatHandler.changeCurrentNameByRoom, req => {
+  const { id: userId, body: { roomName } } = req;
+
+  io.to(roomName).emit('changeUsername', userId);
+});
+
+router.post('/admin/removeRoom', checkToken, chatHandler.removeRoom, req => {
   io.emit('removeRoom', req.roomName);
 });
 
-router.post('/addUserToRoom', checkToken, chatHandler.addUserToRoom, req => {
+router.post('/admin/addUserToRoom', checkToken, chatHandler.addUserToRoom, req => {
   const { roomName, userId } = req.body;
 
   io.to(roomName).emit('addUser', userId);
 });
 
-router.post('/kickUser', checkToken, chatHandler.kickUserByRoom, req => {
+router.post('/admin/kickUser', checkToken, chatHandler.kickUserByRoom, req => {
   const { roomName, userId } = req.body;
 
   io.to(roomName).emit('kickUser', userId);
 });
 
-router.post('/updatePermission', checkToken, chatHandler.updatePermission, req => {
+router.post('/admin/updatePermission', checkToken, chatHandler.updatePermission, req => {
   const { id: userId, body: { roomName } } = req;
 
   io.to(roomName).emit('updatePermission', userId);

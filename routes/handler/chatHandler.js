@@ -109,17 +109,13 @@ module.exports = {
       
       switch(code) {
         case NOT_EXISTS_ROOM.code:
-          console.log(NOT_EXISTS_ROOM.message)
-          // return res.json(util.fail(NOT_EXISTS_ROOM.code, NOT_EXISTS_ROOM.message));
+          console.log(NOT_EXISTS_ROOM.message);
         case NOT_EXISTS_USER_BY_ROOM.code:
-          console.log(NOT_EXISTS_USER_BY_ROOM.message)
-          // return res.json(util.fail(NOT_EXISTS_USER_BY_ROOM.code, error.message));
+          console.log(NOT_EXISTS_USER_BY_ROOM.message);
         case PERMISSION_INSUFFICIENT.code:
-          console.log(PERMISSION_INSUFFICIENT.message)
-          // return res.json(util.fail(PERMISSION_INSUFFICIENT.code, PERMISSION_INSUFFICIENT.message));
+          console.log(PERMISSION_INSUFFICIENT.message);
         default:
           console.log(error);
-          // return res.json(util.fail(OTHER.code, OTHER.message));
       }
     }
   },
